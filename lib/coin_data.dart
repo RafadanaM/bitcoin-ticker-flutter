@@ -46,14 +46,20 @@ class CoinData {
 
   /*
   This method will return the rate of crypto currency to normal currency
-  @param String crypto: Abbreviation of crypto currency name eg: BTC
   @param String currency: Abbreviation of normal currency eg: USD
   @return Json Data
    */
-  Future<dynamic> getRateData(String crypto, String currency) async {
+  Future getRateData(String currency) async {
     String apiKey = await getApiKey();
-    NetworkHelper networkHelper =
-        NetworkHelper('$url/$crypto/$currency?apikey=$apiKey');
-    return networkHelper.getData();
+
+    Map<String, String> exchangeRates = {};
+    for (String cryptoCurrency in cryptoList) {
+      NetworkHelper networkHelper =
+          NetworkHelper('$url/$cryptoCurrency/$currency?apikey=$apiKey');
+      String rate = (await networkHelper.getData() as num).toStringAsFixed(0);
+      exchangeRates[cryptoCurrency] = rate;
+    }
+
+    return exchangeRates;
   }
 }

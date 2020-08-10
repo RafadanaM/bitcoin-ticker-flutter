@@ -6,7 +6,6 @@ class NetworkHelper {
 
   NetworkHelper(this._url);
 
-
   /*
   This method will get the json file from url given
   @return the rate of currency

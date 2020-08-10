@@ -1,3 +1,4 @@
+import 'package:bitcoin_ticker/exchange_rate_card.dart';
 import 'package:flutter/material.dart';
 import 'package:bitcoin_ticker/coin_data.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,9 +10,9 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-  String _exchangeRate = '?';
-  String _cryptoCurrency = 'BTC';
+  Map<String, String> _exchangeRateMap = {};
   String _currentCurrency = 'AUD';
+  bool _isWaiting = true;
 
   @override
   void initState() {
@@ -29,27 +30,7 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 $_cryptoCurrency = $_exchangeRate $_currentCurrency',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          createExchangeCards(),
           Container(
             height: 150.0,
             alignment: Alignment.center,
@@ -62,31 +43,37 @@ class _PriceScreenState extends State<PriceScreen> {
     );
   }
 
-//  void updateRate(dynamic cryptoData) {
-//    setState(() {
-//      if (cryptoData == null) {
-//        _exchangeRate = 'ERROR';
-//        return;
-//      }
-//      int rate = (cryptoData['rate'] as num).toInt();
-//      String cryptoCurrency = cryptoData['asset_id_base'];
-//      String normalCurrency = cryptoData['asset_id_quote'];
-//      _exchangeRate = '1 $cryptoCurrency = $rate $normalCurrency';
-//    });
-//  }
+  Column createExchangeCards() {
+    List<ExchangeRateCard> list = [];
+
+    for (String cryptoCurrency in cryptoList) {
+      list.add(
+        ExchangeRateCard(
+          cryptoCurrency: cryptoCurrency,
+          currentCurrency: _currentCurrency,
+          exchangeRate: _isWaiting ? '?' : _exchangeRateMap[cryptoCurrency],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: list,
+    );
+  }
 
   /*
   This method will get the exchange rate of selected crypto currency and normal currency
-  and change the _exchangeRate value to it.
+  and add it to _exchangeRateMap
    */
   void getCryptoData() async {
+    _isWaiting = true;
     try {
-      double rate =
-          (await CoinData().getRateData('BTC', _currentCurrency) as num)
-              .toDouble();
+      Map<String, String> rate = await CoinData().getRateData(_currentCurrency);
+
       setState(() {
-        print(rate);
-        _exchangeRate = rate.toStringAsFixed(0);
+        _isWaiting = false;
+        _exchangeRateMap = rate;
       });
     } catch (e) {
       print(e);
