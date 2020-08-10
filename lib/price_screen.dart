@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:bitcoin_ticker/coin_data.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 
 class PriceScreen extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class PriceScreen extends StatefulWidget {
 class _PriceScreenState extends State<PriceScreen> {
   String _exchangeRate = '?';
   String _cryptoCurrency = 'BTC';
-  String _currentCurrency = 'USD';
+  String _currentCurrency = 'AUD';
 
   @override
   void initState() {
@@ -54,7 +55,7 @@ class _PriceScreenState extends State<PriceScreen> {
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
             color: Colors.lightBlue,
-            child: null,
+            child: Platform.isIOS ? iosPicker() : androidDropDown(),
           ),
         ],
       ),
@@ -118,7 +119,10 @@ class _PriceScreenState extends State<PriceScreen> {
     );
   }
 
-  CupertinoPicker IosPicker() {
+  /*
+  This method will return Cupertino picker
+   */
+  CupertinoPicker iosPicker() {
     List<Text> itemList = [];
 
     for (String currency in currenciesList) {
@@ -131,12 +135,11 @@ class _PriceScreenState extends State<PriceScreen> {
       backgroundColor: Colors.lightBlue,
       itemExtent: 32.0,
       children: itemList,
-      onSelectedItemChanged:(index) {
+      onSelectedItemChanged: (index) {
         setState(() {
           _currentCurrency = currenciesList[index];
           getCryptoData();
         });
-
       },
     );
   }
