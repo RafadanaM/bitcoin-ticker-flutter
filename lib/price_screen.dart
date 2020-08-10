@@ -1,4 +1,5 @@
 import 'package:bitcoin_ticker/coin_data.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PriceScreen extends StatefulWidget {
@@ -9,7 +10,7 @@ class PriceScreen extends StatefulWidget {
 class _PriceScreenState extends State<PriceScreen> {
   String _exchangeRate = '?';
   String _cryptoCurrency = 'BTC';
-  String _normalCurrency = 'USD';
+  String _currentCurrency = 'USD';
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _PriceScreenState extends State<PriceScreen> {
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
                 child: Text(
-                  '1 $_cryptoCurrency = $_exchangeRate $_normalCurrency',
+                  '1 $_cryptoCurrency = $_exchangeRate $_currentCurrency',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20.0,
@@ -73,10 +74,15 @@ class _PriceScreenState extends State<PriceScreen> {
 //    });
 //  }
 
+  /*
+  This method will get the exchange rate of selected crypto currency and normal currency
+  and change the _exchangeRate value to it.
+   */
   void getCryptoData() async {
     try {
       double rate =
-          (await CoinData().getRateData('BTC', 'USD') as num).toDouble();
+          (await CoinData().getRateData('BTC', _currentCurrency) as num)
+              .toDouble();
       setState(() {
         print(rate);
         _exchangeRate = rate.toStringAsFixed(0);
@@ -84,5 +90,54 @@ class _PriceScreenState extends State<PriceScreen> {
     } catch (e) {
       print(e);
     }
+  }
+
+  /*
+  This method will return androidDropDown menu
+   */
+  DropdownButton<String> androidDropDown() {
+    List<DropdownMenuItem<String>> itemList = [];
+
+    for (String currency in currenciesList) {
+      itemList.add(
+        DropdownMenuItem(
+          child: Text(currency),
+          value: currency,
+        ),
+      );
+    }
+    return DropdownButton(
+      items: itemList,
+      value: _currentCurrency,
+      onChanged: (value) {
+        setState(() {
+          _currentCurrency = value;
+          getCryptoData();
+        });
+      },
+    );
+  }
+
+  CupertinoPicker IosPicker() {
+    List<Text> itemList = [];
+
+    for (String currency in currenciesList) {
+      itemList.add(
+        Text(currency),
+      );
+    }
+
+    return CupertinoPicker(
+      backgroundColor: Colors.lightBlue,
+      itemExtent: 32.0,
+      children: itemList,
+      onSelectedItemChanged:(index) {
+        setState(() {
+          _currentCurrency = currenciesList[index];
+          getCryptoData();
+        });
+
+      },
+    );
   }
 }
